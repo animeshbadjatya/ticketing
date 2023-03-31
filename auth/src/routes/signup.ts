@@ -1,5 +1,12 @@
-import express, { Request, Response } from "express";
+import express, { request, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
+import cookieSession from "cookie-session";
+import { RequestValidationError } from "../errors/request-validation-error";
+import { DatabaseConnectionError } from "../errors/database-connection-error";
+import { User } from "../models/user";
+import { BadRequestError } from "../errors/bad-request-error";
+import { PasswordsManager } from "../services/passwordManager";
 
 const router = express.Router();
 
@@ -12,15 +19,36 @@ router.post(
       .isLength({ min: 4, max: 20 })
       .withMessage("Password must be between 4 and 20 characters"),
   ],
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-      return res.status(400).send(errors.array());
+      //  throw new RequestValidationError('Invalid email or password');
+      throw new RequestValidationError(errors.array());
+    }
+    const { email, password } = req.body;
+
+    const existingUser = await User.findOne({ email: email });
+    //  console.log('existingUser :',existingUser);
+    if (existingUser) {
+      throw new BadRequestError("User already exists");
     }
 
-    const { email, password } = req.body;
-    res.send({});
+    const user = User.build({ email, password });
+    await user.save();
+
+    // Generate JWT token
+    const userJwt = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_KEY!);
+
+    // Store it on session Object
+    req.session = {
+      // user: {
+      //   id: user.id,
+      //   email: user.email,
+      // },
+      jwt: userJwt
+    };
+
+    res.status(201).send(user);
   }
 );
 
