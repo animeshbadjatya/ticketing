@@ -2,11 +2,8 @@ import express, { request, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import cookieSession from "cookie-session";
-import { RequestValidationError } from "../errors/request-validation-error";
-import { DatabaseConnectionError } from "../errors/database-connection-error";
+import { RequestValidationError, BadRequestError } from "@themicroledger/ticketing-common";
 import { User } from "../models/user";
-import { BadRequestError } from "../errors/bad-request-error";
-import { PasswordsManager } from "../services/passwordManager";
 
 const router = express.Router();
 
