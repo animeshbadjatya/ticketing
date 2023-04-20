@@ -1,0 +1,12 @@
+
+{
+    "type": "mysql",
+    "host": "configurations-mysql-srv",
+    "port": 3306,
+    "username": "rooty",
+    "password": "passwork",
+    "database": "ib_configurations",
+    "synchronize": true,
+    "logging": false,
+    "connectTimeout": 50000
+  }
